@@ -17,13 +17,17 @@ steps:
   inputs:
     version: '$(dotnetSdkVersion)'
 
-- task: NuGetToolInstaller@0
+# Use Node.js 14.x to support node-sass in the Learn lab
+- task: NodeTool@0
   inputs:
-    versionSpec: '5.9.1'
+    versionSpec: '14.x'
+  displayName: 'Use Node.js 14.x'
 
 - task: Npm@1
   displayName: 'Run npm install'
   inputs:
+    command: 'install'
+    workingDir: 'Tailspin.SpaceGame.Web'
     verbose: false
 
 - script: './node_modules/.bin/node-sass $(wwwrootDir) --output $(wwwrootDir)'
@@ -31,16 +35,21 @@ steps:
 
 - task: gulp@1
   displayName: 'Run gulp tasks'
+  inputs:
+    gulpFile: 'Tailspin.SpaceGame.Web/gulpfile.js'
 
 - script: 'echo "$(Build.DefinitionName), $(Build.BuildId), $(Build.BuildNumber)" > buildinfo.txt'
   displayName: 'Write build info'
   workingDirectory: $(wwwrootDir)
 
-- task: NuGetCommand@2
+- task: NuGetAuthenticate@1
+  displayName: 'Authenticate with Azure Artifacts'
+
+- task: DotNetCoreCLI@2
   displayName: 'Restore project dependencies'
   inputs:
     command: 'restore'
-    restoreSolution: '**/*.sln'
+    projects: '**/*.sln'
     feedsToUse: 'select'
     vstsFeed: '$(System.TeamProject)/Tailspin.SpaceGame.Web.Models'
 
