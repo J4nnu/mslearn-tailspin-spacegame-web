@@ -1,9 +1,9 @@
-#Note
+
 trigger:
 - '*'
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: ubuntu-latest
   demands:
   - npm
 
@@ -17,10 +17,6 @@ steps:
   displayName: 'Use .NET SDK $(dotnetSdkVersion)'
   inputs:
     version: '$(dotnetSdkVersion)'
-
-- task: NuGetToolInstaller@0
-  inputs:
-    versionSpec: '5.9.1'
 
 - task: NodeTool@0
   inputs:
@@ -42,14 +38,13 @@ steps:
   displayName: 'Write build info'
   workingDirectory: $(wwwrootDir)
 
-- task: NuGetAuthenticate@1
-  displayName: 'Authenticate with Azure Artifacts'
-
-- task: DotNetCoreCLI@2
+- task: NuGetCommand@2
   displayName: 'Restore project dependencies'
   inputs:
     command: 'restore'
-    projects: '**/*.sln'
+    restoreSolution: '**/*.sln'
+    feedsToUse: 'select'
+    vstsFeed: '$(System.TeamProject)/Tailspin.SpaceGame.Web.Models'
 
 - task: DotNetCoreCLI@2
   displayName: 'Build the project - $(buildConfiguration)'
